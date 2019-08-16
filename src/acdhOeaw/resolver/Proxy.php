@@ -169,12 +169,12 @@ class Proxy {
         $status = $response->getStatusCode();
         if (in_array($status, array(401, 403))) {
             if (!isset($_SERVER['PHP_AUTH_USER'])) {
-                header('HTTP/1.1 401 Unauthorized');
+                http_response_code(401);
                 header('WWW-Authenticate: Basic realm="resolver"');
             }
             return;
         } else {
-            header('HTTP/1.1 ' . $response->getStatusCode() . ' ' . $response->getReasonPhrase());
+            http_response_code($response->getStatusCode());
             foreach ($response->getHeaders() as $name => $values) {
                 if (in_array(strtolower($name), self::$skipResponseHeaders)) {
                     continue;

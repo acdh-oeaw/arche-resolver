@@ -1,7 +1,13 @@
 {
     "require": {
-        "zozlak/util": "*",
-        "acdh-oeaw/repo-php-util": "~2",
-        "guzzlehttp/guzzle": "~6.0"
+        "guzzlehttp/guzzle": "~6.0",
+        "zozlak/logging": "*",
+        "zozlak/http-accept": "*",
+        "acdh-oeaw/acdh-repo-acdh": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "acdhOeaw\\": "src/acdhOeaw"
+        }
     }
 }

@@ -3,7 +3,7 @@
 /*
  * The MIT License
  *
- * Copyright 2018 zozlak.
+ * Copyright 2018 Austrian Centre for Digital Humanities.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 namespace acdhOeaw\resolver;
 
 use Exception;
+use Throwable;
 
 /**
  * Description of AccessRightsException
@@ -34,5 +35,10 @@ use Exception;
  * @author zozlak
  */
 class AccessRightsException extends Exception {
-    //put your code here
+
+    public function __construct(string $message = '', int $code = 403,
+                                Throwable $previous = null): Exception {
+        parent::__construct($message, $code, $previous);
+    }
+
 }
