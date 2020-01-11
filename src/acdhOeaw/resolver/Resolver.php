@@ -27,12 +27,14 @@
 namespace acdhOeaw\resolver;
 
 use PDO;
+use PDOException;
 use RuntimeException;
 use Throwable;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\RequestException;
 use acdhOeaw\acdhRepoLib\Repo;
+use acdhOeaw\acdhRepoLib\RepoDb;
 use acdhOeaw\acdhRepoLib\Schema;
 use acdhOeaw\acdhRepoLib\exception\NotFound;
 use acdhOeaw\acdhRepoLib\exception\AmbiguousMatch;
@@ -110,7 +112,18 @@ class Resolver {
      * @return string
      */
     private function getResourceId(): string {
-        $proto = $this->config->resolver->idProtocol;
+        $https = filter_input(\INPUT_SERVER, 'HTTPS');
+        if (strtolower(filter_input(\INPUT_SERVER, 'HTTP_X_FORWARDED_PROTO')) === 'https') {
+            $https = 'https';
+        }
+        $port = filter_input(\INPUT_SERVER, 'SERVER_PORT');
+        if (filter_input(\INPUT_SERVER, 'HTTP_X_FORWARDED_PORT')) {
+            $port = filter_input(\INPUT_SERVER, 'HTTP_X_FORWARDED_PORT');
+        }
+        $proto = ((int) $port) === 443 || !empty($https) && $https !== 'off' ? 'https' : 'http';
+        if (!empty($this->config->resolver->idHost)) {
+            $proto = $this->config->resolver->idProtocol;
+        }
 
         if (filter_input(\INPUT_SERVER, 'HTTP_X_FORWARDED_HOST')) {
             $host = explode(',', filter_input(\INPUT_SERVER, 'HTTP_X_FORWARDED_HOST'));
@@ -142,28 +155,30 @@ class Resolver {
      * @throws RuntimeException
      */
     private function findResource(string $resId): RepoResource {
+        $schema  = new Schema($this->config->schema);
+        $headers = new Schema($this->config->rest->headers);
         foreach ($this->config->resolver->repositories as $r) {
-            $repo = new Repo($r->baseUrl, new Schema($this->config->schema), new Schema($this->config->rest->headers), $r->options);
-            if (!empty($r->dbConnStr ?? '')) {
-                $pdo   = new PDO($r->dbConnStr);
-                $query = $pdo->prepare("SELECT id FROM identifiers WHERE ids = ?");
-                $query->execute([$resId]);
-                $id    = $query->fetchColumn();
-                if ($id !== false) {
-                    return new RepoResource($r->baseUrl . $id, $repo);
+            try {
+                /* @var $repo \acdhOeaw\acdhRepoLib\RepoInterface */
+                if (!empty($r->dbConnStr ?? '')) {
+                    $pdo = new PDO($r->dbConnStr);
+                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    $repo = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
+                } else {
+                    $repo = new Repo($r->baseUrl, $schema, $headers, $r->options);
                 }
-            } else {
-                try {
-                    $res = $repo->getResourceById($resId, self::RESOURCE_CLASS);
-                    $this->log->info("\tresource found: " . $res->getUri());
-                    return $res;
-                } catch (NotFound $e) {
-                    // skip as maybe it will match the next repository
-                } catch (AmbiguousMatch $e) {
-                    throw new RuntimeException('Internal Server Error - many resources with the given URI', 500);
-                } catch (RequestException $e) {
-                    // simply skip faulty repositories
-                }
+
+                $res = $repo->getResourceById($resId, self::RESOURCE_CLASS);
+                $this->log->info("\tresource found: " . $res->getUri());
+                return $res;
+            } catch (NotFound $e) {
+                // skip as maybe it will match the next repository
+            } catch (AmbiguousMatch $e) {
+                throw new RuntimeException('Internal Server Error - many resources with the given URI', 500);
+            } catch (RequestException $e) {
+                // simply skip faulty repositories
+            } catch (PDOException $e) {
+                // simply skip faulty repositories
             }
         }
         throw new NotFound();
