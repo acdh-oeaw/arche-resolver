@@ -1,4 +1,16 @@
 {
+   "name": "acdh-oeaw/acdh-repo-resolver",
+    "type": "library",
+    "description": "A resolver for the ACDH digital objects repository",
+    "keywords": [],
+    "homepage": "https://github.com/acdh-oeaw/repo-resolver",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mateusz Żółtak",
+            "email": "mzoltak@oeaw.ac.at"
+        }
+    ],
     "require": {
         "guzzlehttp/guzzle": "~6.0",
         "zozlak/logging": "*",
