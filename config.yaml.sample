@@ -1,0 +1,54 @@
+schema:
+    id: https://vocabs.acdh.oeaw.ac.at/schema#hasIdentifier
+    parent: https://vocabs.acdh.oeaw.ac.at/schema#isPartOf
+    label: https://vocabs.acdh.oeaw.ac.at/schema#hasTitle
+    searchMatch: search://match
+    searchFts: search://fts
+    dissService:
+        class: https://vocabs.acdh.oeaw.ac.at/schema#DisseminationService
+        location: https://vocabs.acdh.oeaw.ac.at/schema#serviceLocation
+        returnFormat: https://vocabs.acdh.oeaw.ac.at/schema#hasReturnType
+        matchProperty: https://vocabs.acdh.oeaw.ac.at/schema#matchesProp
+        matchValue: https://vocabs.acdh.oeaw.ac.at/schema#matchesValue
+        matchRequired: https://vocabs.acdh.oeaw.ac.at/schema#isRequired
+        revProxy: https://vocabs.acdh.oeaw.ac.at/schema#serviceRevProxy
+        parameterClass: https://vocabs.acdh.oeaw.ac.at/schema#DisseminationServiceParameter
+        parameterDefaultValue: https://vocabs.acdh.oeaw.ac.at/schema#hasDefaultValue
+        parameterRdfProperty: https://vocabs.acdh.oeaw.ac.at/schema#usesRdfProperty
+        hasService: https://vocabs.acdh.oeaw.ac.at/schema#hasDissService
+rest:
+    urlBase: http://127.0.0.1
+    pathBase: /rest/
+    headers:
+        metadataReadMode: X-METADATA-READ-MODE
+        metadataParentProperty: X-PARENT-PROPERTY
+        metadataWriteMode: X-METADATA-WRITE-MODE
+        transactionId: X-TRANSACTION-ID
+resolver:
+    logging:
+        file: /home/zozlak/roboty/ACDH/repo/repo-resolver/log
+        # debug/info/notice/warning/error/critical/alert/emergency
+        level: debug
+    idProtocol: http
+    # when empty tries to guess from HTTP headers
+    idHost: ''
+    idPathBase: ''
+    defaultDissService: raw
+    fastTrack:
+        raw: ''
+        application/octet-stream: ''
+        rdf: /metadata
+        text/turtle: /metadata
+        application/n-triples: /metadata
+        application/rdf+xml: /metadata
+        application/ld+json: /metadata
+    repositories:
+        -   baseUrl: http://127.0.0.1/rest/
+            # optional, when available a faster resource search is performed (saving ~100 ms)
+            dbConnStr: "pgsql: user=zozlak"
+            # acdhOeaw\acdhRepoLib\Repo::__construct() $guzzleOptions parameter value, e.g.:
+            # options:
+            #   auth:
+            #     - httpBasicLogin
+            #     - httpBasicPassword
+            options: []

@@ -1,6 +1,6 @@
 {
    "name": "acdh-oeaw/acdh-repo-resolver",
-    "type": "library",
+    "type": "project",
     "description": "A resolver for the ACDH digital objects repository",
     "keywords": [],
     "homepage": "https://github.com/acdh-oeaw/repo-resolver",
