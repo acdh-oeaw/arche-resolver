@@ -1,9 +1,9 @@
 {
-   "name": "acdh-oeaw/acdh-repo-resolver",
+   "name": "acdh-oeaw/arche-resolver",
     "type": "project",
     "description": "A resolver for the ACDH digital objects repository",
     "keywords": [],
-    "homepage": "https://github.com/acdh-oeaw/repo-resolver",
+    "homepage": "https://github.com/acdh-oeaw/arche-resolver",
     "license": "MIT",
     "authors": [
         {
@@ -12,10 +12,10 @@
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": "~6.0",
+        "guzzlehttp/guzzle": "~6",
         "zozlak/logging": "*",
         "zozlak/http-accept": "*",
-        "acdh-oeaw/acdh-repo-acdh": "*"
+        "acdh-oeaw/arche-lib-disserv": "*"
     },
     "autoload": {
         "psr-4": {

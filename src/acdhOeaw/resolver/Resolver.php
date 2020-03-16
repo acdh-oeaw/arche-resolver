@@ -38,8 +38,8 @@ use acdhOeaw\acdhRepoLib\RepoDb;
 use acdhOeaw\acdhRepoLib\Schema;
 use acdhOeaw\acdhRepoLib\exception\NotFound;
 use acdhOeaw\acdhRepoLib\exception\AmbiguousMatch;
-use acdhOeaw\acdhRepoAcdh\RepoResource;
-use acdhOeaw\acdhRepoAcdh\dissemination\Service;
+use acdhOeaw\acdhRepoDisserv\RepoResource;
+use acdhOeaw\acdhRepoDisserv\dissemination\Service;
 use zozlak\HttpAccept;
 use zozlak\logging\Log;
 
@@ -51,7 +51,7 @@ use zozlak\logging\Log;
  */
 class Resolver {
 
-    const RESOURCE_CLASS = '\acdhOeaw\acdhRepoAcdh\RepoResource';
+    const RESOURCE_CLASS = '\acdhOeaw\acdhRepoDisserv\RepoResource';
 
     static public $debug = false;
     private $config;
@@ -239,7 +239,7 @@ class Resolver {
     }
 
     private function findDissService(RepoResource $res): Service {
-        /* @var $service \acdhOeaw\acdhRepoAcdh\dissemination\Service */
+        /* @var $service \acdhOeaw\acdhRepoDisserv\dissemination\Service */
         $service  = null;
         $dissServ = $res->getDissServices();
         $formats  = array_map(function($x) {
