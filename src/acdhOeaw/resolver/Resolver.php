@@ -161,12 +161,13 @@ class Resolver {
             try {
                 /* @var $repo \acdhOeaw\acdhRepoLib\RepoInterface */
                 if (!empty($r->dbConnStr ?? '')) {
-                    $pdo = new PDO($r->dbConnStr);
+                    $pdo  = new PDO($r->dbConnStr);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     $repo = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
                 } else {
-                    $repo = new Repo($r->baseUrl, $schema, $headers, $r->options);
+                    $repo = new Repo($r->baseUrl, $schema, $headers, (array) $r->options);
                 }
+                $repo->setQueryLog($this->log);
 
                 $res = $repo->getResourceById($resId, self::RESOURCE_CLASS);
                 $this->log->info("\tresource found: " . $res->getUri());
