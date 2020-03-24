@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-namespace acdhOeaw\resolver;
+namespace acdhOeaw\arche\resolver;
 
 use Exception;
 use Throwable;

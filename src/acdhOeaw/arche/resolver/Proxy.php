@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-namespace acdhOeaw\resolver;
+namespace acdhOeaw\arche\resolver;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
