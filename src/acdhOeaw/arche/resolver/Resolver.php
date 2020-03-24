@@ -38,8 +38,8 @@ use acdhOeaw\acdhRepoLib\RepoDb;
 use acdhOeaw\acdhRepoLib\Schema;
 use acdhOeaw\acdhRepoLib\exception\NotFound;
 use acdhOeaw\acdhRepoLib\exception\AmbiguousMatch;
-use acdhOeaw\acdhRepoDisserv\RepoResource;
-use acdhOeaw\acdhRepoDisserv\dissemination\Service;
+use acdhOeaw\arche\disserv\RepoResourceInterface;
+use acdhOeaw\arche\disserv\dissemination\ServiceInterface;
 use zozlak\HttpAccept;
 use zozlak\logging\Log;
 
@@ -50,8 +50,6 @@ use zozlak\logging\Log;
  * @author zozlak
  */
 class Resolver {
-
-    const RESOURCE_CLASS = '\acdhOeaw\acdhRepoDisserv\RepoResource';
 
     static public $debug = false;
     private $config;
@@ -151,25 +149,27 @@ class Resolver {
     /**
      * Finds a repository resource which corresponds to a given URI
      * @param string $resId URI to be mapped to a repository resource
-     * @return RepoResource
+     * @return RepoResourceInterface
      * @throws RuntimeException
      */
-    private function findResource(string $resId): RepoResource {
+    private function findResource(string $resId): RepoResourceInterface {
         $schema  = new Schema($this->config->schema);
         $headers = new Schema($this->config->rest->headers);
         foreach ($this->config->resolver->repositories as $r) {
             try {
                 /* @var $repo \acdhOeaw\acdhRepoLib\RepoInterface */
                 if (!empty($r->dbConnStr ?? '')) {
-                    $pdo  = new PDO($r->dbConnStr);
+                    $pdo   = new PDO($r->dbConnStr);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                    $repo = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
+                    $repo  = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
+                    $class = '\acdhOeaw\arche\disserv\RepoResourceDb';
                 } else {
-                    $repo = new Repo($r->baseUrl, $schema, $headers, (array) $r->options);
+                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) $r->options);
+                    $class = '\acdhOeaw\arche\disserv\RepoResource';
                 }
                 $repo->setQueryLog($this->log);
 
-                $res = $repo->getResourceById($resId, self::RESOURCE_CLASS);
+                $res = $repo->getResourceById($resId, $class);
                 $this->log->info("\tresource found: " . $res->getUri());
                 return $res;
             } catch (NotFound $e) {
@@ -212,10 +212,10 @@ class Resolver {
      * 
      * The list of {mime type, URL suffix} pairs is read from the config.
      * 
-     * @param RepoResource $res repository resource to be disseminated
+     * @param RepoResourceInterface $res repository resource to be disseminated
      * @return bool
      */
-    private function checkFastTrack(RepoResource $res): bool {
+    private function checkFastTrack(RepoResourceInterface $res): bool {
         $formats  = [];
         $suffixes = [];
         foreach ($this->config->resolver->fastTrack as $mime => $suffix) {
@@ -239,8 +239,13 @@ class Resolver {
         return false;
     }
 
-    private function findDissService(RepoResource $res): Service {
-        /* @var $service \acdhOeaw\acdhRepoDisserv\dissemination\Service */
+    /**
+     * 
+     * @param RepoResourceInterface $res
+     * @return ServiceInterface
+     */
+    private function findDissService(RepoResourceInterface $res): ServiceInterface {
+        /* @var $service \acdhOeaw\arche\disserv\dissemination\ServiceInterface */
         $service  = null;
         $dissServ = $res->getDissServices();
         $formats  = array_map(function($x) {

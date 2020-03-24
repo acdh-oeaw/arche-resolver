@@ -1,5 +1,5 @@
 {
-   "name": "acdh-oeaw/arche-resolver",
+    "name": "acdh-oeaw/arche-resolver",
     "type": "project",
     "description": "A resolver for the ACDH digital objects repository",
     "keywords": [],
@@ -15,7 +15,7 @@
         "guzzlehttp/guzzle": "~6",
         "zozlak/logging": "*",
         "zozlak/http-accept": "*",
-        "acdh-oeaw/arche-lib-disserv": "^1"
+        "acdh-oeaw/arche-lib-disserv": "^2"
     },
     "autoload": {
         "psr-4": {
