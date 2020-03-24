@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-use acdhOeaw\resolver\arche\Resolver;
+use acdhOeaw\arche\resolver\Resolver;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
