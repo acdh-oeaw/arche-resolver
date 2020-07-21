@@ -164,7 +164,7 @@ class Resolver {
                     $repo  = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
                     $class = '\acdhOeaw\arche\disserv\RepoResourceDb';
                 } else {
-                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) $r->options);
+                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) ($r->options ?? []));
                     $class = '\acdhOeaw\arche\disserv\RepoResource';
                 }
                 $repo->setQueryLog($this->log);
