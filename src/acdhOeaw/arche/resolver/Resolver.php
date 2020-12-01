@@ -70,7 +70,9 @@ class Resolver {
             $resId = $this->getResourceId();
             $res   = $this->findResource($resId);
 
-            $this->sanitizeAcceptHeader();
+            $cmdiNmsp = $this->config->resolver->cmdi->idNamespace;
+            $isCmdi   = substr($resId, 0, strlen($cmdiNmsp)) === $cmdiNmsp;
+            $this->sanitizeAcceptHeader($isCmdi);
 
             // check fast resolution track (a basic "match on mime and appent a suffix to the resource URL" model)
             $done = $this->checkFastTrack($res);
@@ -164,7 +166,8 @@ class Resolver {
                     $repo  = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
                     $class = '\acdhOeaw\arche\disserv\RepoResourceDb';
                 } else {
-                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) ($r->options ?? []));
+                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) ($r->options ?? [
+]));
                     $class = '\acdhOeaw\arche\disserv\RepoResource';
                 }
                 $repo->setQueryLog($this->log);
@@ -189,10 +192,13 @@ class Resolver {
      * Sanitizes requested output format by applying following rules:
      * - `format` request query parameter overwrites whole HTTP Accept header
      * - the wildcard is turned into the default dissemination service
+     * - for a CMDI requests format mappings defined in cfg.resolver.cmdi.formatMappings
+     *   are applied
      * 
+     * @param bool $isCmdi is CMDI id requested?
      * @return void
      */
-    private function sanitizeAcceptHeader(): void {
+    private function sanitizeAcceptHeader(bool $isCmdi): void {
         $accept = filter_input(\INPUT_SERVER, 'HTTP_ACCEPT');
 
         $forceFormat = filter_input(\INPUT_GET, 'format');
@@ -205,6 +211,20 @@ class Resolver {
 
         $_SERVER['HTTP_ACCEPT'] = $accept;
         $this->log->info("\trequested format: " . $accept);
+
+        if ($isCmdi) {
+            $cmdiMap     = $this->config->resolver->cmdi->formatMappings;
+            $cmdiDefault = $this->config->resolver->cmdi->defaultDissService;
+            try {
+                $bestMatch = HttpAccept::getBestMatch(array_keys((array) $cmdiMap))->getFullType();
+                $accept    = isset($cmdiMap->$bestMatch) ? $cmdiMap->$bestMatch : $cmdiDefault;
+            } catch (RuntimeException $e) {
+                $accept = $cmdiDefault;
+            }
+            $_SERVER['HTTP_ACCEPT'] = $accept;
+            HttpAccept::parse();
+            $this->log->info("\tCMDI format mapped to $accept");
+        }
     }
 
     /**
