@@ -37,8 +37,7 @@ use Throwable;
 class AccessRightsException extends Exception {
 
     public function __construct(string $message = '', int $code = 403,
-                                Throwable $previous = null): Exception {
+                                Throwable $previous = null) {
         parent::__construct($message, $code, $previous);
     }
-
 }

@@ -33,13 +33,13 @@ use Throwable;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\RequestException;
-use acdhOeaw\acdhRepoLib\Repo;
-use acdhOeaw\acdhRepoLib\RepoDb;
-use acdhOeaw\acdhRepoLib\Schema;
-use acdhOeaw\acdhRepoLib\exception\NotFound;
-use acdhOeaw\acdhRepoLib\exception\AmbiguousMatch;
-use acdhOeaw\arche\disserv\RepoResourceInterface;
-use acdhOeaw\arche\disserv\dissemination\ServiceInterface;
+use acdhOeaw\arche\lib\Repo;
+use acdhOeaw\arche\lib\RepoDb;
+use acdhOeaw\arche\lib\Schema;
+use acdhOeaw\arche\lib\exception\NotFound;
+use acdhOeaw\arche\lib\exception\AmbiguousMatch;
+use acdhOeaw\arche\lib\disserv\RepoResourceInterface;
+use acdhOeaw\arche\lib\disserv\dissemination\ServiceInterface;
 use zozlak\HttpAccept;
 use zozlak\logging\Log;
 
@@ -51,9 +51,9 @@ use zozlak\logging\Log;
  */
 class Resolver {
 
-    static public $debug = false;
-    private $config;
-    private $log;
+    static public bool $debug = false;
+    private object $config;
+    private Log $log;
 
     public function __construct(object $config) {
         $this->config = $config;
@@ -262,9 +262,9 @@ class Resolver {
     /**
      * 
      * @param RepoResourceInterface $res
-     * @return ServiceInterface
+     * @return ?ServiceInterface
      */
-    private function findDissService(RepoResourceInterface $res): ServiceInterface {
+    private function findDissService(RepoResourceInterface $res): ?ServiceInterface {
         /* @var $service \acdhOeaw\arche\disserv\dissemination\ServiceInterface */
         $service  = null;
         $dissServ = $res->getDissServices();
@@ -295,7 +295,7 @@ class Resolver {
      * @throws AccessRightsException
      * @throws RequestException
      */
-    private function checkAccessRights(string $uri) {
+    private function checkAccessRights(string $uri): void {
         $headers = Proxy::getForwardHeaders();
         $request = new Request('HEAD', $uri, $headers);
         $options = [
@@ -307,16 +307,16 @@ class Resolver {
             $client->send($request);
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
-                $code = $e->getResponse()->getStatusCode();
+                $code = $e->getResponse()?->getStatusCode();
                 if ($code === 401) {
                     header('HTTP/1.1 401 Unauthorized');
                     header('WWW-Authenticate: Basic realm="resolver"');
                     echo "Authentication required\n";
-                    throw AccessRightsException($e->getMessage(), $code);
+                    throw new AccessRightsException($e->getMessage(), $code);
                 } elseif ($code === 403) {
                     header('HTTP/1.1 403 Forbidden');
                     echo "Access denied\n";
-                    throw AccessRightsException($e->getMessage(), $code);
+                    throw new AccessRightsException($e->getMessage(), $code);
                 }
             }
             throw $e;

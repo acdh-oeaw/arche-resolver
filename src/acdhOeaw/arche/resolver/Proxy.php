@@ -30,6 +30,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
+use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 
 /**
@@ -42,7 +43,7 @@ class Proxy {
     /**
      * Response headers not to be forwarded to the client.
      * (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#hbh plus host header)
-     * @var array
+     * @var array<string>
      */
     static $skipResponseHeaders = [
         'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization',
@@ -51,13 +52,13 @@ class Proxy {
 
     /**
      * Client request headers not to be forwarded to the diss service.
-     * @var array
+     * @var array<string>
      */
-    static $skipForwardHeaders  = ['host'];
+    static $skipForwardHeaders = ['host'];
 
     /**
      * Returns all valid headers comming from the client request.
-     * @return array
+     * @return array<string, string>
      */
     static public function getForwardHeaders(): array {
         $headers = array();
@@ -105,10 +106,10 @@ class Proxy {
      * - makes a final request passing client request body to the diss service
      *   and passing data returned by the diss service to the client
      * @param Request $request diss service request to be reverse-proxied
-     * @return Response
+     * @return ?ResponseInterface
      * @throws RequestException
      */
-    static public function proxy(Request $request): Response {
+    static public function proxy(Request $request): ?ResponseInterface {
         $headers       = $request->getHeaders();
         $clientHeaders = self::getForwardHeaders();
         foreach ($clientHeaders as $h => $v) {
@@ -130,7 +131,7 @@ class Proxy {
         $head = new Request($request->getMethod(), $request->getUri(), $headers, $request->getBody());
         while (true) {
             $response = self::sendRequest($client, $head);
-            $code     = $response->getStatusCode();
+            $code     = $response?->getStatusCode();
             if ((int) ($code / 100) === 3 && $code <= 307) {
                 $head = $head->withUri(new Uri($response->getHeader('Location')[0]));
             } else {
@@ -142,7 +143,7 @@ class Proxy {
         // adjust client options
         $output                = fopen('php://output', 'w');
         $options['sink']       = $output;
-        $options['on_headers'] = function(Response $r) {
+        $options['on_headers'] = function (Response $r) {
             self::handleResponseHeaders($r);
         };
         $client = new Client($options);
@@ -156,7 +157,9 @@ class Proxy {
             }
             $response = $e->getResponse();
         } finally {
-            fclose($output);
+            if (is_resource($output)) {
+                fclose($output);
+            }
         }
         return $response;
     }
@@ -165,7 +168,7 @@ class Proxy {
      * Handles response headers.
      * @param Response $response
      */
-    static public function handleResponseHeaders(Response $response) {
+    static public function handleResponseHeaders(Response $response): void {
         $status = $response->getStatusCode();
         if (in_array($status, array(401, 403))) {
             if (!isset($_SERVER['PHP_AUTH_USER'])) {
@@ -190,10 +193,10 @@ class Proxy {
      * Sends a given request
      * @param Client $client Guzzle HTTP client object
      * @param Request $request request to be sent
-     * @return Response
+     * @return ?ResponseInterface
      * @throws RequestException
      */
-    static private function sendRequest(Client $client, Request $request): Response {
+    static private function sendRequest(Client $client, Request $request): ?ResponseInterface {
         try {
             $response = $client->send($request);
         } catch (RequestException $e) {
@@ -208,5 +211,4 @@ class Proxy {
         }
         return $response;
     }
-
 }

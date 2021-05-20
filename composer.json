@@ -12,14 +12,18 @@
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": "~6",
+        "guzzlehttp/guzzle": "~7",
         "zozlak/logging": "*",
         "zozlak/http-accept": "*",
-        "acdh-oeaw/arche-lib-disserv": "^2"
+        "acdh-oeaw/arche-lib": "^2.0.0-alpha",
+        "acdh-oeaw/arche-lib-disserv": "^3.0.0-alpha"
     },
     "autoload": {
         "psr-4": {
             "acdhOeaw\\": "src/acdhOeaw"
         }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "*"
     }
 }
