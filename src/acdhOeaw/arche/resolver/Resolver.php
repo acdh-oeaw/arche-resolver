@@ -40,6 +40,8 @@ use acdhOeaw\arche\lib\exception\NotFound;
 use acdhOeaw\arche\lib\exception\AmbiguousMatch;
 use acdhOeaw\arche\lib\disserv\RepoResourceInterface;
 use acdhOeaw\arche\lib\disserv\dissemination\ServiceInterface;
+use acdhOeaw\arche\lib\disserv\RepoResource;
+use acdhOeaw\arche\lib\disserv\RepoResourceDb;
 use zozlak\HttpAccept;
 use zozlak\logging\Log;
 
@@ -164,11 +166,10 @@ class Resolver {
                     $pdo   = new PDO($r->dbConnStr);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     $repo  = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
-                    $class = '\acdhOeaw\arche\disserv\RepoResourceDb';
+                    $class = RepoResourceDb::class;;
                 } else {
-                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) ($r->options ?? [
-]));
-                    $class = '\acdhOeaw\arche\disserv\RepoResource';
+                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) ($r->options ?? array()));
+                    $class = RepoResource::class;
                 }
                 $repo->setQueryLog($this->log);
 
