@@ -11,4 +11,4 @@ Service providing ACDH id resolution and resources dissemination.
 
 ## Documentation
 
-https://acdh-oeaw.github.io/arche-docs/arche-resolver/
+https://acdh-oeaw.github.io/arche-docs/devdocs/namespaces/acdhoeaw-arche-resolver.html
