@@ -13,9 +13,9 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "~7",
-        "zozlak/logging": "*",
-        "zozlak/http-accept": "*",
-        "acdh-oeaw/arche-lib": "^2.0.0 | ^3.0.0",
+        "zozlak/logging": ">=0.1 <1",
+        "zozlak/http-accept": ">=0.1 <1",
+        "acdh-oeaw/arche-lib": ">=2 <5",
         "acdh-oeaw/arche-lib-disserv": "^3.0.0"
     },
     "autoload": {
