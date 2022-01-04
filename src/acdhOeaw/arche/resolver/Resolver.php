@@ -53,6 +53,8 @@ use zozlak\logging\Log;
  */
 class Resolver {
 
+    const FORMAT_LIST_SERVICES = '__list__';
+
     static public bool $debug = false;
     private object $config;
     private Log $log;
@@ -74,33 +76,38 @@ class Resolver {
 
             $cmdiNmsp = $this->config->resolver->cmdi->idNamespace;
             $isCmdi   = substr($resId, 0, strlen($cmdiNmsp)) === $cmdiNmsp;
-            $this->sanitizeAcceptHeader($isCmdi);
+            $accept   = $this->sanitizeAcceptHeader($isCmdi);
+            if ($accept === self::FORMAT_LIST_SERVICES) {
+                $this->listDissServices($res);
+                return;
+            }
 
-            // check fast resolution track (a basic "match on mime and appent a suffix to the resource URL" model)
+            // check fast resolution track (a basic "match on mime and append a suffix to the resource URL" model)
             $done = $this->checkFastTrack($res);
-            if (!$done) {
-                $service = $this->findDissService($res);
+            if ($done) {
+                return;
+            }
+            
+            $service = $this->findDissService($res);
+            if ($service === null) {
+                $this->redirect($res->getUri());
+            } elseif (!$service->getRevProxy()) {
+                $request = $service->getRequest($res);
+                $this->redirect($request->getUri());
+            } else {
+                // It's the only thing we can check for sure cause other resources 
+                // might be encoded in the diss service request in a way the resolver
+                // doesn't understand.
+                // In the "reverse proxy to separated location having full repo access
+                // rights" scenario it creates problem of "resource injection"
+                // attacks when a dissemination service parameter (which access rights
+                // aren't checked by the resolver) will be manipulated to get access
+                // to it.
+                $this->checkAccessRights($res->getUri());
 
-                if ($service === null) {
-                    $this->redirect($res->getUri());
-                } elseif (!$service->getRevProxy()) {
-                    $request = $service->getRequest($res);
-                    $this->redirect($request->getUri());
-                } else {
-                    // It's the only thing we can check for sure cause other resources 
-                    // might be encoded in the diss service request in a way the resolver
-                    // doesn't understand.
-                    // In the "reverse proxy to separated location having full repo access
-                    // rights" scenario it creates problem of "resource injection"
-                    // attacks when a dissemination service parameter (which access rights
-                    // aren't checked by the resolver) will be manipulated to get access
-                    // to it.
-                    $this->checkAccessRights($res->getUri());
-
-                    $request = $service->getRequest($res);
-                    $this->log->info("\tmaking a proxy request to " . $request->getUri());
-                    Proxy::proxy($request);
-                }
+                $request = $service->getRequest($res);
+                $this->log->info("\tmaking a proxy request to " . $request->getUri());
+                Proxy::proxy($request);
             }
         } catch (Throwable $e) {
             $this->log->error($e);
@@ -166,7 +173,8 @@ class Resolver {
                     $pdo   = new PDO($r->dbConnStr);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     $repo  = new RepoDb($r->baseUrl, $schema, $headers, $pdo);
-                    $class = RepoResourceDb::class;;
+                    $class = RepoResourceDb::class;
+                    ;
                 } else {
                     $repo  = new Repo($r->baseUrl, $schema, $headers, (array) ($r->options ?? array()));
                     $class = RepoResource::class;
@@ -197,9 +205,9 @@ class Resolver {
      *   are applied
      * 
      * @param bool $isCmdi is CMDI id requested?
-     * @return void
+     * @return string sanitized Accept header value
      */
-    private function sanitizeAcceptHeader(bool $isCmdi): void {
+    private function sanitizeAcceptHeader(bool $isCmdi): string {
         $accept = filter_input(\INPUT_SERVER, 'HTTP_ACCEPT');
 
         $forceFormat = filter_input(\INPUT_GET, 'format');
@@ -226,6 +234,8 @@ class Resolver {
             HttpAccept::parse();
             $this->log->info("\tCMDI format mapped to $accept");
         }
+
+        return $accept;
     }
 
     /**
@@ -269,7 +279,7 @@ class Resolver {
         /* @var $service \acdhOeaw\arche\disserv\dissemination\ServiceInterface */
         $service  = null;
         $dissServ = $res->getDissServices();
-        $formats  = array_map(function($x) {
+        $formats  = array_map(function ($x) {
             return (new HttpAccept($x))->getFullType();
         }, array_keys($dissServ));
         $dissServ = array_combine($formats, $dissServ);
@@ -328,5 +338,20 @@ class Resolver {
         header('Location: ' . $url);
         $this->log->info("\tredirecting to $url");
     }
-
+    
+    private function listDissServices(RepoResourceInterface $res): void {
+        /* @var $service \acdhOeaw\arche\disserv\dissemination\ServiceInterface */
+        $services = $res->getDissServices();
+        $results = [];
+        foreach ($services as $format => $service) {
+            $results[] = [
+                'serviceUri' => $service->getUri(), 
+                'formats' => $service->getFormats(),
+                'url' => $service->getRevProxy() ? "reverse proxy" : (string) $service->getRequest($res)->getUri(),
+                'description' => (string) $service->getGraph()->getLiteral('https://vocabs.acdh.oeaw.ac.at/schema#hasTitle'),
+            ];
+        }
+        header('Content-Type: application/json');
+        echo json_encode($results);
+    }
 }
