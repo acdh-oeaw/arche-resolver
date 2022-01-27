@@ -87,7 +87,7 @@ class Resolver {
             if ($done) {
                 return;
             }
-            
+
             $service = $this->findDissService($res);
             if ($service === null) {
                 $this->redirect($res->getUri());
@@ -176,7 +176,7 @@ class Resolver {
                     $class = RepoResourceDb::class;
                     ;
                 } else {
-                    $repo  = new Repo($r->baseUrl, $schema, $headers, (array) ($r->options ?? array()));
+                    $repo  = new Repo($r->baseUrl, (array) ($r->options ?? []));
                     $class = RepoResource::class;
                 }
                 $repo->setQueryLog($this->log);
@@ -338,16 +338,16 @@ class Resolver {
         header('Location: ' . $url);
         $this->log->info("\tredirecting to $url");
     }
-    
+
     private function listDissServices(RepoResourceInterface $res): void {
         /* @var $service \acdhOeaw\arche\disserv\dissemination\ServiceInterface */
         $services = $res->getDissServices();
-        $results = [];
+        $results  = [];
         foreach ($services as $format => $service) {
             $results[] = [
-                'serviceUri' => $service->getUri(), 
-                'formats' => $service->getFormats(),
-                'url' => $service->getRevProxy() ? "reverse proxy" : (string) $service->getRequest($res)->getUri(),
+                'serviceUri'  => $service->getUri(),
+                'formats'     => $service->getFormats(),
+                'url'         => $service->getRevProxy() ? "reverse proxy" : (string) $service->getRequest($res)->getUri(),
                 'description' => (string) $service->getGraph()->getLiteral('https://vocabs.acdh.oeaw.ac.at/schema#hasTitle'),
             ];
         }
