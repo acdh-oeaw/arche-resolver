@@ -13,7 +13,7 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "~7",
-        "zozlak/logging": ">=0.1 <1",
+        "zozlak/logging": "^1",
         "zozlak/http-accept": ">=0.1 <1",
         "acdh-oeaw/arche-lib": ">=4 <6",
         "acdh-oeaw/arche-lib-disserv": "^3.0.0"
