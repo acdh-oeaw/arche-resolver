@@ -28,10 +28,16 @@ use acdhOeaw\arche\resolver\Resolver;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+$config  = json_decode(json_encode(yaml_parse_file('config.yaml')));
+$headers = implode(', ', (array) $config->rest->headers);
 
-$config   = json_decode(json_encode(yaml_parse_file('config.yaml')));
-$resolver = new Resolver($config);
-$resolver->resolve();
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: X-Requested-With, Content-Type, ' . $headers);
+
+if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') === 'OPTIONS') {
+    header('Allow: OPTIONS, GET');
+} else {
+    $resolver = new Resolver($config);
+    $resolver->resolve();
+}
 
