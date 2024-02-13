@@ -348,7 +348,7 @@ class Resolver {
                 'serviceUri'  => $service->getUri(),
                 'formats'     => $service->getFormats(),
                 'url'         => $service->getRevProxy() ? "reverse proxy" : (string) $service->getRequest($res)->getUri(),
-                'description' => (string) $service->getGraph()->getLiteral('https://vocabs.acdh.oeaw.ac.at/schema#hasTitle'),
+                'description' => (string) $service->getGraph()->getObject($this->config->schema->label),
             ];
         }
         header('Content-Type: application/json');
