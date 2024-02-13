@@ -33,6 +33,7 @@ use Throwable;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\RequestException;
+use termTemplates\PredicateTemplate as PT;
 use acdhOeaw\arche\lib\Repo;
 use acdhOeaw\arche\lib\RepoDb;
 use acdhOeaw\arche\lib\Schema;
@@ -348,7 +349,7 @@ class Resolver {
                 'serviceUri'  => $service->getUri(),
                 'formats'     => $service->getFormats(),
                 'url'         => $service->getRevProxy() ? "reverse proxy" : (string) $service->getRequest($res)->getUri(),
-                'description' => (string) $service->getGraph()->getObject($this->config->schema->label),
+                'description' => (string) $service->getGraph()->getObject(new PT($this->config->schema->label)),
             ];
         }
         header('Content-Type: application/json');
