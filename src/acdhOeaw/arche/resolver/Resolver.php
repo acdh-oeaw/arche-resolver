@@ -37,6 +37,7 @@ use termTemplates\PredicateTemplate as PT;
 use acdhOeaw\arche\lib\Repo;
 use acdhOeaw\arche\lib\RepoDb;
 use acdhOeaw\arche\lib\Schema;
+use acdhOeaw\arche\lib\SearchConfig;
 use acdhOeaw\arche\lib\exception\NotFound;
 use acdhOeaw\arche\lib\exception\AmbiguousMatch;
 use acdhOeaw\arche\lib\disserv\RepoResourceInterface;
@@ -182,7 +183,9 @@ class Resolver {
                 }
                 $repo->setQueryLog($this->log);
 
-                $res = $repo->getResourceById($resId, $class);
+                $cfg        = new SearchConfig();
+                $cfg->class = $class;
+                $res        = $repo->getResourceById($resId, $cfg);
                 $this->log->info("\tresource found: " . $res->getUri());
                 return $res;
             } catch (NotFound $e) {
