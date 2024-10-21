@@ -183,9 +183,10 @@ class Resolver {
                 }
                 $repo->setQueryLog($this->log);
 
-                $cfg        = new SearchConfig();
-                $cfg->class = $class;
-                $res        = $repo->getResourceById($resId, $cfg);
+                $cfg               = new SearchConfig();
+                $cfg->metadataMode = '0_0_0_0';
+                $cfg->class        = $class;
+                $res               = $repo->getResourceById($resId, $cfg);
                 $this->log->info("\tresource found: " . $res->getUri());
                 return $res;
             } catch (NotFound $e) {
