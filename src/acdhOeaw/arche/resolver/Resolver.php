@@ -264,7 +264,7 @@ class Resolver {
             if ($bestMatch->getQuality() == 1 || count(HttpAccept::get()) === 1) {
                 $url = $res->getUri() . $suffixes[$bestMatch->getFullType()];
                 $this->log->info("\tfast track found for $bestMatch: $url");
-                $this->redirect($url);
+                $this->redirect($url . '?' . http_build_query($_GET));
                 return true;
             } else {
                 $this->log->info("\tfast track $bestMatch found but skipped due to low weight");
@@ -357,6 +357,6 @@ class Resolver {
             ];
         }
         header('Content-Type: application/json');
-        echo json_encode($results);
+        echo json_encode($results, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }
