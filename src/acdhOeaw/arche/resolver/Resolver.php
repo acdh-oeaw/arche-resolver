@@ -56,7 +56,6 @@ use zozlak\logging\Log;
 class Resolver {
 
     const FORMAT_LIST_SERVICES = '__list__';
-    const FORMAT_QUERY_PARAM   = 'format';
 
     static public bool $debug = false;
     private object $config;
@@ -217,7 +216,7 @@ class Resolver {
     private function sanitizeAcceptHeader(bool $isCmdi): string {
         $accept = filter_input(\INPUT_SERVER, 'HTTP_ACCEPT');
 
-        $forceFormat = filter_input(\INPUT_GET, self::FORMAT_QUERY_PARAM);
+        $forceFormat = filter_input(\INPUT_GET, ServiceInterface::FORMAT_QUERY_PARAM);
         if (!empty($forceFormat)) {
             $accept = $forceFormat;
         }
@@ -293,9 +292,9 @@ class Resolver {
         $this->log->info("\tavailable diss services: " . implode(', ', $formats));
 
         try {
-            $bestMatch                      = HttpAccept::getBestMatch(array_keys($dissServ));
-            $_GET[self::FORMAT_QUERY_PARAM] = preg_replace('/;.*/', '', $bestMatch);
-            $service                        = $dissServ[$bestMatch->getFullType()];
+            $bestMatch                                  = HttpAccept::getBestMatch(array_keys($dissServ));
+            $_GET[ServiceInterface::FORMAT_QUERY_PARAM] = preg_replace('/;.*/', '', $bestMatch);
+            $service                                    = $dissServ[$bestMatch->getFullType()];
             $this->log->info("\tmatched $bestMatch");
         } catch (RuntimeException $e) {
             $defaultServ = $this->config->resolver->defaultDissService;
