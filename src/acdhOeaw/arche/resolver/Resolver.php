@@ -186,6 +186,7 @@ class Resolver {
                 $cfg               = new SearchConfig();
                 $cfg->metadataMode = '0_0_0_0';
                 $cfg->class        = $class;
+                /** @var \acdhOeaw\arche\lib\disserv\RepoResource $res*/
                 $res               = $repo->getResourceById($resId, $cfg);
                 $this->log->info("\tresource found: " . $res->getUri());
                 return $res;
@@ -281,7 +282,7 @@ class Resolver {
      * @return ?ServiceInterface
      */
     private function findDissService(RepoResourceInterface $res): ?ServiceInterface {
-        /* @var $service \acdhOeaw\arche\disserv\dissemination\ServiceInterface */
+        /* @var $service \acdhOeaw\arche\lib\disserv\dissemination\ServiceInterface */
         $service  = null;
         $dissServ = $res->getDissServices();
         $formats  = array_map(function ($x) {

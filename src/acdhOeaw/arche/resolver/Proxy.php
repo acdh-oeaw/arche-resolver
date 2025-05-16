@@ -116,9 +116,6 @@ class Proxy {
             if (!isset($headers[$h])) {
                 $headers[$h] = [];
             }
-            if (!is_array($headers[$h])) {
-                $headers[$h] = [$headers[$h]];
-            }
             $headers[$h][] = $v;
         }
 
