@@ -56,6 +56,7 @@ use zozlak\logging\Log;
 class Resolver {
 
     const FORMAT_LIST_SERVICES = '__list__';
+    const FORMAT_QUERY_PARAM   = 'format';
 
     static public bool $debug = false;
     private object $config;
@@ -186,7 +187,7 @@ class Resolver {
                 $cfg               = new SearchConfig();
                 $cfg->metadataMode = '0_0_0_0';
                 $cfg->class        = $class;
-                /** @var \acdhOeaw\arche\lib\disserv\RepoResource $res*/
+                /** @var \acdhOeaw\arche\lib\disserv\RepoResource $res */
                 $res               = $repo->getResourceById($resId, $cfg);
                 $this->log->info("\tresource found: " . $res->getUri());
                 return $res;
@@ -216,7 +217,7 @@ class Resolver {
     private function sanitizeAcceptHeader(bool $isCmdi): string {
         $accept = filter_input(\INPUT_SERVER, 'HTTP_ACCEPT');
 
-        $forceFormat = filter_input(\INPUT_GET, 'format');
+        $forceFormat = filter_input(\INPUT_GET, self::FORMAT_QUERY_PARAM);
         if (!empty($forceFormat)) {
             $accept = $forceFormat;
         }
@@ -293,6 +294,7 @@ class Resolver {
 
         try {
             $bestMatch = HttpAccept::getBestMatch(array_keys($dissServ));
+            $_GET[self::FORMAT_QUERY_PARAM] = $bestMatch;
             $service   = $dissServ[$bestMatch->getFullType()];
             $this->log->info("\tmatched $bestMatch");
         } catch (RuntimeException $e) {
