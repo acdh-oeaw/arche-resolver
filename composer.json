@@ -15,7 +15,8 @@
         "guzzlehttp/guzzle": "^7",
         "zozlak/logging": "^1",
         "zozlak/http-accept": ">=0.1 <1",
-        "acdh-oeaw/arche-lib-disserv": "^4.1"
+        "acdh-oeaw/arche-lib-disserv": "^4.1",
+        "zozlak/guzzle-proxy-client": "^1.0"
     },
     "autoload": {
         "psr-4": {

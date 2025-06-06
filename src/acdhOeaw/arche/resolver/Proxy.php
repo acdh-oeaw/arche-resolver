@@ -26,6 +26,7 @@
 
 namespace acdhOeaw\arche\resolver;
 
+use zozlak\ProxyClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Request;
@@ -122,7 +123,7 @@ class Proxy {
         $options                    = [];
         $options['verify']          = false;
         $options['allow_redirects'] = false;
-        $client                     = new Client($options);
+        $client                     = ProxyClient::factory($options);
 
         // Process possible redirects
         $head = new Request($request->getMethod(), $request->getUri(), $headers, $request->getBody());
@@ -143,7 +144,7 @@ class Proxy {
         $options['on_headers'] = function (Response $r) {
             self::handleResponseHeaders($r);
         };
-        $client = new Client($options);
+        $client = ProxyClient::factory($options);
 
         // make a final proxy call
         try {

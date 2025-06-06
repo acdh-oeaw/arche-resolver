@@ -30,7 +30,7 @@ use PDO;
 use PDOException;
 use RuntimeException;
 use Throwable;
-use GuzzleHttp\Client;
+use zozlak\ProxyClient;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\RequestException;
 use termTemplates\PredicateTemplate as PT;
@@ -320,7 +320,7 @@ class Resolver {
             'verify'          => false,
             'allow_redirects' => true,
         ];
-        $client  = new Client($options);
+        $client  = ProxyClient::factory($options);
         try {
             $client->send($request);
         } catch (RequestException $e) {
